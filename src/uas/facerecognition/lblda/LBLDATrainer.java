@@ -43,15 +43,27 @@ public class LBLDATrainer {
 
 	private static LBLDATrainer objTrainer = null;
 
-	public static LBLDATrainer getInstance(Mat image, int imageWidth, int imageHeight, int outputDimension,
-			String subspacePath) {
+	public static LBLDATrainer getInstance() {
 		if (objTrainer == null) {
-			objTrainer = new LBLDATrainer(image, imageWidth, imageHeight, outputDimension, subspacePath);
+			objTrainer = new LBLDATrainer();
 		}
 		return objTrainer;
 	}
 
-	public LBLDATrainer(Mat image, int imageWidth, int imageHeight, int outputDimension, String subspacePath) {
+	public LBLDATrainer() {
+
+	}
+
+	public SampleContainer getProjectedSampleList() {
+		return projectedTestSamples;
+	}
+
+	public List<Double> getResultData(Sample sample) {
+		return sample.getData();
+	}
+
+	public void setData(Mat image, int imageWidth, int imageHeight, int outputDimension, String subspacePath){
+		trainImages = null;
 
 		this.imageWidth = imageWidth;
 		this.imageHeight = imageHeight;
@@ -62,14 +74,10 @@ public class LBLDATrainer {
 		trainImages.put("NewClass", image);
 		testImages = trainImages;
 
-	}
-
-	public SampleContainer getProjectedSampleList() {
-		return projectedTestSamples;
-	}
-
-	public List<Double> getResultData(Sample sample){
-		return sample.getData();
+		trainSamples = null;
+		testSamples = null;
+		projectedTrainSamples = null;
+		projectedTestSamples = null;
 	}
 
 	public boolean loadSamples() {
@@ -86,15 +94,14 @@ public class LBLDATrainer {
 		return true;
 	}
 
-	public boolean projectSamples() {
+	public boolean projectSamples() throws IOException {
 
 		if (this.localSubspace == null) {
-			if (loadData(this.subspacePath))
+			if (!loadData(this.subspacePath))
 				return false;
 		}
 
 		// project samples into subspace
-
 		LocalSubspaceProjector projector = new LocalSubspaceProjector(this.localSubspace);
 
 		if (testSamples == trainSamples) {
@@ -104,11 +111,10 @@ public class LBLDATrainer {
 			projectedTrainSamples = projector.projectSampleContainer(this.trainSamples, 0);
 			projectedTestSamples = projector.projectSampleContainer(this.testSamples, 0);
 		}
-
 		return true;
 	}
 
-	public boolean loadData(String path) {
+	public boolean loadData(String path) throws IOException {
 		System.out.println("Starting deSerialization...");
 		try {
 			FileInputStream fileIn = new FileInputStream(path);
@@ -123,11 +129,10 @@ public class LBLDATrainer {
 			fileIn.close();
 			return true;
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			throw e;
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw e;
 		}
-		return false;
 	}
 
 }

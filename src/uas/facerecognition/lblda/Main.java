@@ -3,8 +3,12 @@
  */
 package uas.facerecognition.lblda;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
@@ -24,53 +28,84 @@ public class Main implements IConstant {
 
 	static Logger logger = LoggerFactory.getLogger(Main.class);
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException, IOException {
 
-		if (args.length != 3) {
-			logger.error("Three arguments should be supplied with application to run.");
+		if (args.length != 3 && args.length != 1) {
+			logger.error("Three arguments or one argument should be supplied with application to run.");
 			return;
 		}
+		String imagePath = "";
+		String subspacePath = "";
+		String dataFile = "";
+
+		String fileConsistImages = "";
+
+		if (args.length == 3) {
+			imagePath = args[0];
+			subspacePath = args[1];
+			dataFile = args[2];
+		} else {
+			fileConsistImages = args[0];
+		}
+
+		long startTime = System.currentTimeMillis();
 
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 		logger.info("OpenCV library loaded successfully");
 
-		logger.info("Sample Projection for " + args[0]);
-		long startTime = System.currentTimeMillis();
+		File imagesFile = new File(fileConsistImages);
 
+		try (BufferedReader br = new BufferedReader(new FileReader(imagesFile))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				String[] temp = line.split(" ");
 
-		Mat img = Imgcodecs.imread(args[0]);
-		Mat resizeimage = new Mat();
-		Size size = new Size(IMAGE_WIDTH, IMAGE_HEIGHT);
-		Imgproc.resize(img, resizeimage, size);
+				imagePath = temp[0];
+				subspacePath = temp[1];
+				dataFile = temp[2];
 
-		String subspacePath = args[1];
+				logger.info("Sample Projection for " + imagePath);
 
-		if (!new File(subspacePath).exists()) {
-			logger.error("Subspace path is not exist." + subspacePath);
-			return;
-		}
-		LBLDATrainer trainer = LBLDATrainer.getInstance(resizeimage, IMAGE_WIDTH, IMAGE_HEIGHT, OUTPUT_DIMENSION, subspacePath);
+				Mat img = Imgcodecs.imread(imagePath);
+				Mat resizeimage = new Mat();
+				Size size = new Size(IMAGE_WIDTH, IMAGE_HEIGHT);
+				Imgproc.resize(img, resizeimage, size);
 
-		trainer.loadSamples();
-		trainer.projectSamples();
+				if (!new File(subspacePath).exists()) {
+					logger.error("Subspace path is not exist." + subspacePath);
+					return;
+				}
+				LBLDATrainer trainer = LBLDATrainer.getInstance();
 
-		List<Double> resultData = trainer.getResultData(trainer.getProjectedSampleList().getSample(0));
+				trainer.setData(resizeimage, IMAGE_WIDTH, IMAGE_HEIGHT, OUTPUT_DIMENSION, subspacePath);
+				trainer.loadSamples();
+				try{
+				trainer.projectSamples();
 
-		try {
-			File file = new File(args[2]);
-			BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-			for (int i = 0; i < resultData.size(); i++)
-				bw.write(Double.toString(resultData.get(i)) + "\t");
+				List<Double> resultData = trainer.getResultData(trainer.getProjectedSampleList().getSample(0));
 
-			bw.flush();
-			bw.close();
+				try {
+					File file = new File(dataFile);
+					BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+					for (int i = 0; i < resultData.size(); i++)
+						bw.write(Double.toString(resultData.get(i)) + "\t");
 
-		} catch (IOException exio) {
-			logger.error(exio.getMessage());
+					bw.flush();
+					bw.close();
+					logger.info("Features data in decimal format written at :" + dataFile);
+				} catch (IOException exio) {
+					logger.error(exio.getMessage());
+				}
+
+				}catch(Exception ex){
+//TODO:: Handle Exception..
+				}
+			}
 		}
 
 		long endTime = System.currentTimeMillis();
 		double timeElapsed = ((endTime - startTime) / 1000.0);
 		logger.info("Sample Projection finished in " + timeElapsed + " sec");
+
 	}
 }
