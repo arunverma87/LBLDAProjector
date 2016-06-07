@@ -79,26 +79,26 @@ public class Main implements IConstant {
 
 				trainer.setData(resizeimage, IMAGE_WIDTH, IMAGE_HEIGHT, OUTPUT_DIMENSION, subspacePath);
 				trainer.loadSamples();
-				try{
-				trainer.projectSamples();
-
-				List<Double> resultData = trainer.getResultData(trainer.getProjectedSampleList().getSample(0));
-
 				try {
-					File file = new File(dataFile);
-					BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-					for (int i = 0; i < resultData.size(); i++)
-						bw.write(Double.toString(resultData.get(i)) + "\t");
+					trainer.projectSamples();
 
-					bw.flush();
-					bw.close();
-					logger.info("Features data in decimal format written at :" + dataFile);
-				} catch (IOException exio) {
-					logger.error(exio.getMessage());
-				}
+					List<Double> resultData = trainer.getResultData(trainer.getProjectedSampleList().getSample(0));
 
-				}catch(Exception ex){
-//TODO:: Handle Exception..
+					try {
+						File file = new File(dataFile);
+						BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+						for (int i = 0; i < resultData.size(); i++)
+							bw.write(Double.toString(resultData.get(i)) + "\t");
+
+						bw.flush();
+						bw.close();
+						logger.info("Features data in decimal format written at :" + dataFile);
+					} catch (IOException exio) {
+						logger.error(exio.getMessage());
+					}
+
+				} catch (Exception ex) {
+					// TODO:: Handle Exception..
 				}
 			}
 		}

@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class Subspace implements Serializable {
 
-	private static final transient long serialVersionUID = 1L;
+	//private static final transient long serialVersionUID = 1L;
 
 	private SubspaceType type; // SubSpace Type
 	private int subspaceDim; // dimensionality of the subspace

@@ -1,0 +1,3 @@
+INFO main uas.facerecognition.featureextract.lblda.Main - OpenCV library loaded successfully
+INFO main uas.facerecognition.featureextract.lblda.Main - Sample Projection for D:\llfw_cropped\Aaron_Eckhart\Aaron_Eckhart_0001_cropped_image.jpg
+DEBUG main uas.facerecognition.featureextract.lblda.LBLDATrainer - Total samples loaded in to system: 1

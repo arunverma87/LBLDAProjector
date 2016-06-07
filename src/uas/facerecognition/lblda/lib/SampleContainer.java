@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SampleContainer {
 
-	static Logger logger = LoggerFactory.getLogger(SampleContainer.class);
+	//static Logger logger = LoggerFactory.getLogger(SampleContainer.class);
 
 	private List<Sample> samples;
 	private Map<String, Integer> diffClasses;
